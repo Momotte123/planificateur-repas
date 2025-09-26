@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planificateur de Repas</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const { 
+            Plus, Edit3, Trash2, Calendar, ShoppingCart, 
+            Archive, ChefHat, Save, RotateCcw 
+        } = lucide;
+
+        const MealPlannerApp = () => {
+            const [activeTab, setActiveTab] = useState('planner');
+            const [recipes, setRecipes] = useState([]);
+            const [weekPlans, setWeekPlans] = useState([]);
+            const [currentWeekPlan, setCurrentWeekPlan] = useState({
+                name: '',
+                meals: {
+                    lundi: { petitDejeuner: null, dejeuner: null, gouter: null, diner: null },
+                    mardi: { petitDejeuner: null, dejeuner: null, gouter: null, diner: null },
+                    mercredi: { petitDejeuner: null, dejeuner: null, gouter: null, diner: null },
+                    jeudi: { petitDejeuner: null, dejeuner: null, gouter: null, diner: null },
+                    vendredi: { petitDejeuner: null, dejeuner: null, gouter: null, diner: null },
+                    samedi: { petitDejeuner: null, dejeuner: null, gouter: null, diner: null },
+                    dimanche: { petitDejeuner: null, dejeuner: null, gouter: null, diner: null }
+                }
+            });
+            const [shoppingList, setShoppingList] = useState([]);
+            const [editingRecipe, setEditingRecipe] = useState(null);
+            const [showRecipeForm, setShowRecipeForm] = useState(false);
+
+            const units = ['unité', 'g', 'kg', 'mL', 'cL', 'L', 'pincée', 'CàC', 'CàS'];
+            const days = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
+            const mealTypes = ['petitDejeuner', 'dejeuner', 'gouter', 'diner'];
+
+            // Fonction pour obtenir la date du lundi de la semaine courante
+            const getMondayOfCurrentWeek = () => {
+                const today = new Date();
+                const dayOfWeek = today.getDay();
+                const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+                const monday = new Date(today);
+                monday.setDate(today.getDate() + daysToMonday);
+                return monday;
+            };
+
+            // Fonction pour formater une date en français
+            const formatDateInFrench = (date) => {
+                return date.toLocaleDateString('fr-FR', {
+                    day: '2-digit',
+                    month: '2-digit'
+                });
+            };
+
+            // Fonction pour obtenir les dates de la semaine
+            const getWeekDates = () => {
+                const monday = getMondayOfCurrentWeek();
+                const weekDates = {};
+                
+                days.forEach((day, index) => {
+                    const date = new Date(monday);
+                    date.setDate(monday.getDate() + index);
+                    weekDates[day] = date;
+                });
+                
+                return weekDates;
+            };
+
+            const weekDates = getWeekDates();
+
+            // Chargement des données au démarrage
+            useEffect(() => {
+                const savedData = JSON.parse(localStorage.getItem('mealPlannerData') || '{}');
+                if (savedData.recipes) setRecipes(savedData.recipes);
+                if (savedData.weekPlans) setWeekPlans(savedData.weekPlans);
+                if (savedData.currentWeekPlan) setCurrentWeekPlan(savedData.currentWeekPlan);
+                if (savedData.shoppingList) setShoppingList(savedData.shoppingList);
+            }, []);
+
+            // Sauvegarde en temps réel
+            useEffect(() => {
+                const data = { recipes, weekPlans, currentWeekPlan, shoppingList };
+                localStorage.setItem('mealPlannerData', JSON.stringify(data));
+            }, [recipes, weekPlans, currentWeekPlan, shoppingList]);
+
+            // Gestion des recettes
+            const addRecipe = (recipe) => {
+                const newRecipe = {
+                    id: Date.now(),
+                    ...recipe,
+                    createdAt: new Date().toISOString()
+                };
+                setRecipes([...recipes, newRecipe]);
+            };
+
+            const updateRecipe = (updatedRecipe) => {
+                setRecipes(recipes.map(r => r.id === updatedRecipe.id ? updatedRecipe : r));
+            };
+
+            const deleteRecipe = (id) => {
+                setRecipes(recipes.filter(r => r.id !== id));
+            };
+
+            // Gestion du semainier
+            const assignMealToDay = (day, mealType, recipe) => {
+                setCurrentWeekPlan({
+                    ...currentWeekPlan,
+                    meals: {
+                        ...currentWeekPlan.meals,
+                        [day]: {
+                            ...currentWeekPlan.meals[day],
+                            [mealType]: recipe
+                        }
+                    }
+                });
+            };
+
+            const saveWeekPlan = () => {
+                if (!currentWeekPlan.name) {
+                    return;
+                }
+                const newWeekPlan = {
+                    id: Date.now(),
+                    ...currentWeekPlan,
+                    savedAt: new Date().toISOString()
+                };
+                setWeekPlans([...weekPlans, newWeekPlan]);
+            };
+
+            const loadWeekPlan = (weekPlan) => {
+                setCurrentWeekPlan(weekPlan);
+                setActiveTab('planner');
+            };
+
+            const deleteWeekPlan = (id) => {
+                setWeekPlans(weekPlans.filter(w => w.id !== id));
+            };
+
+            // Fonction pour réinitialiser le semainier
+            const resetWeekPlan = () => {
+                setCurrentWeekPlan({
+                    name: '',
+                    meals: {
+                        lundi: { petitDejeuner: null, dejeuner: null, gouter: null, diner: null },
+                        mardi: { petitDejeuner: null, dejeuner: null, gouter: null, diner: null },
+                        mercredi: { petitDejeuner: null, dejeuner: null, gouter: null, diner: null },
+                        jeudi: { petitDejeuner: null, dejeuner: null, gouter: null, diner: null },
+                        vendredi: { petitDejeuner: null, dejeuner: null, gouter: null, diner: null },
+                        samedi: { petitDejeuner: null, dejeuner: null, gouter: null, diner: null },
+                        dimanche: { petitDejeuner: null, dejeuner: null, gouter: null, diner: null }
+                    }
+                });
+            };
+
+            // Génération de la liste de courses
+            const generateShoppingList = () => {
+                const ingredients = {};
+                
+                Object.values(currentWeekPlan.meals).forEach(dayMeals => {
+                    Object.values(dayMeals).forEach(meal => {
+                        if (meal && meal.ingredients) {
+                            meal.ingredients.forEach(ingredient => {
+                                const key = `${ingredient.name}_${ingredient.unit}`;
+                                if (ingredients[key]) {
+                                    ingredients[key].quantity += parseFloat(ingredient.quantity) || 0;
+                                } else {
+                                    ingredients[key] = {
+                                        name: ingredient.name,
+                                        quantity: parseFloat(ingredient.quantity) || 0,
+                                        unit: ingredient.unit
+                                    };
+                                }
+                            });
+                        }
+                    });
+                });
+
+                const newShoppingList = Object.values(ingredients).map(ingredient => ({
+                    id: Date.now() + Math.random(),
+                    ...ingredient,
+                    bought: false
+                }));
+
+                setShoppingList(newShoppingList);
+                setActiveTab('shopping');
+            };
+
+            const toggleShoppingItem = (id) => {
+                setShoppingList(shoppingList.map(item => 
+                    item.id === id ? { ...item, bought: !item.bought } : item
+                ));
+            };
+
+            const deleteShoppingItem = (id) => {
+                setShoppingList(shoppingList.filter(item => item.id !== id));
+            };
+
+            // Composant formulaire de recette
+            const RecipeForm = ({ recipe, onSave, onCancel }) => {
+                const [formData, setFormData] = useState(recipe || {
+                    title: '',
+                    description: '',
+                    ingredients: [{ name: '', quantity: '', unit: 'unité' }]
+                });
+
+                const addIngredient = () => {
+                    setFormData({
+                        ...formData,
+                        ingredients: [...formData.ingredients, { name: '', quantity: '', unit: 'unité' }]
+                    });
+                };
+
+                const updateIngredient = (index, field, value) => {
+                    const newIngredients = [...formData.ingredients];
+                    newIngredients[index] = { ...newIngredients[index], [field]: value };
+                    setFormData({ ...formData, ingredients: newIngredients });
+                };
+
+                const removeIngredient = (index) => {
+                    if (formData.ingredients.length > 1) {
+                        setFormData({
+                            ...formData,
+                            ingredients: formData.ingredients.filter((_, i) => i !== index)
+                        });
+                    }
+                };
+
+                const handleSave = () => {
+                    if (!formData.title || formData.ingredients.some(ing => !ing.name)) {
+                        return;
+                    }
+                    onSave(formData);
+                };
+
+                return React.createElement('div', {
+                    className: "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+                }, React.createElement('div', {
+                    className: "bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+                }, [
+                    React.createElement('h2', {
+                        className: "text-xl font-bold mb-4",
+                        key: "title"
+                    }, recipe ? 'Modifier la recette' : 'Nouvelle recette'),
+                    React.createElement('div', { key: "content" }, [
+                        React.createElement('div', {
+                            className: "mb-4",
+                            key: "titleInput"
+                        }, [
+                            React.createElement('label', {
+                                className: "block text-sm font-medium mb-2",
+                                key: "label"
+                            }, "Titre"),
+                            React.createElement('input', {
+                                type: "text",
+                                value: formData.title,
+                                onChange: (e) => setFormData({...formData, title: e.target.value}),
+                                className: "w-full p-2 border rounded-lg",
+                                placeholder: "Nom de la recette...",
+                                key: "input"
+                            })
+                        ]),
+                        React.createElement('div', {
+                            className: "mb-4",
+                            key: "descInput"
+                        }, [
+                            React.createElement('label', {
+                                className: "block text-sm font-medium mb-2",
+                                key: "label"
+                            }, "Description"),
+                            React.createElement('textarea', {
+                                value: formData.description,
+                                onChange: (e) => setFormData({...formData, description: e.target.value}),
+                                className: "w-full p-2 border rounded-lg h-24 resize-none",
+                                placeholder: "Description de la recette...",
+                                key: "textarea"
+                            })
+                        ]),
+                        React.createElement('div', {
+                            className: "mb-6",
+                            key: "ingredients"
+                        }, [
+                            React.createElement('label', {
+                                className: "block text-sm font-medium mb-2",
+                                key: "label"
+                            }, "Ingrédients"),
+                            ...formData.ingredients.map((ingredient, index) => 
+                                React.createElement('div', {
+                                    key: index,
+                                    className: "flex gap-2 mb-2 items-center"
+                                }, [
+                                    React.createElement('input', {
+                                        type: "text",
+                                        value: ingredient.name,
+                                        onChange: (e) => updateIngredient(index, 'name', e.target.value),
+                                        className: "flex-1 p-2 border rounded",
+                                        placeholder: "Nom de l'ingrédient",
+                                        key: "name"
+                                    }),
+                                    React.createElement('input', {
+                                        type: "number",
+                                        step: "0.1",
+                                        value: ingredient.quantity,
+                                        onChange: (e) => updateIngredient(index, 'quantity', e.target.value),
+                                        className: "w-20 p-2 border rounded",
+                                        placeholder: "Qté",
+                                        key: "quantity"
+                                    }),
+                                    React.createElement('select', {
+                                        value: ingredient.unit,
+                                        onChange: (e) => updateIngredient(index, 'unit', e.target.value),
+                                        className: "p-2 border rounded",
+                                        key: "unit"
+                                    }, units.map(unit => 
+                                        React.createElement('option', {
+                                            key: unit,
+                                            value: unit
+                                        }, unit)
+                                    )),
+                                    React.createElement('button', {
+                                        type: "button",
+                                        onClick: () => removeIngredient(index),
+                                        className: "text-red-500 hover:text-red-700",
+                                        disabled: formData.ingredients.length === 1,
+                                        key: "delete"
+                                    }, React.createElement(Trash2, { size: 16 }))
+                                ])
+                            ),
+                            React.createElement('button', {
+                                type: "button",
+                                onClick: addIngredient,
+                                className: "text-green-600 hover:text-green-800 text-sm",
+                                key: "addButton"
+                            }, "+ Ajouter un ingrédient")
+                        ]),
+                        React.createElement('div', {
+                            className: "flex gap-2 justify-end",
+                            key: "buttons"
+                        }, [
+                            React.createElement('button', {
+                                type: "button",
+                                onClick: onCancel,
+                                className: "px-4 py-2 text-gray-600 hover:bg-gray-100 rounded",
+                                key: "cancel"
+                            }, "Annuler"),
+                            React.createElement('button', {
+                                type: "button",
+                                onClick: handleSave,
+                                className: "px-4 py-2 bg-green-600 text-white hover:bg-green-700 rounded flex items-center gap-2",
+                                key: "save"
+                            }, [
+                                React.createElement(Save, { size: 16, key: "icon" }),
+                                "Sauvegarder"
+                            ])
+                        ])
+                    ])
+                ]));
+            };
+
+            const getMealTypeLabel = (mealType) => {
+                switch(mealType) {
+                    case 'petitDejeuner': return 'Petit-déjeuner';
+                    case 'dejeuner': return 'Déjeuner';
+                    case 'gouter': return 'Goûter';
+                    case 'diner': return 'Dîner';
+                    default: return mealType;
+                }
+            };
+
+            return React.createElement('div', {
+                className: "max-w-6xl mx-auto p-4"
+            }, [
+                React.createElement('h1', {
+                    className: "text-3xl font-bold text-center mb-8 text-green-700",
+                    key: "title"
+                }, "🥗 Planificateur de Repas"),
+                
+                // Navigation
+                React.createElement('div', {
+                    className: "flex flex-wrap gap-2 mb-6 border-b",
+                    key: "navigation"
+                }, [
+                    { key: 'planner', label: 'Semainier', icon: Calendar },
+                    { key: 'recipes', label: 'Recettes', icon: ChefHat },
+                    { key: 'archive', label: 'Historique', icon: Archive },
+                    { key: 'shopping', label: 'Liste de Courses', icon: ShoppingCart }
+                ].map(tab => 
+                    React.createElement('button', {
+                        key: tab.key,
+                        onClick: () => setActiveTab(tab.key),
+                        className: `px-4 py-2 rounded-t-lg flex items-center gap-2 ${
+                            activeTab === tab.key 
+                                ? 'bg-green-600 text-white' 
+                                : 'bg-gray-100 hover:bg-gray-200'
+                        }`
+                    }, [
+                        React.createElement(tab.icon, { size: 16, key: "icon" }),
+                        tab.label
+                    ])
+                )),
+
+                // Contenu des onglets
+                activeTab === 'planner' && React.createElement('div', { key: "planner-content" }, [
+                    React.createElement('div', {
+                        className: "mb-6 flex flex-wrap gap-4 items-center",
+                        key: "controls"
+                    }, [
+                        React.createElement('input', {
+                            type: "text",
+                            value: currentWeekPlan.name,
+                            onChange: (e) => setCurrentWeekPlan({...currentWeekPlan, name: e.target.value}),
+                            placeholder: "Nom du semainier...",
+                            className: "flex-1 min-w-64 p-2 border rounded-lg",
+                            key: "nameInput"
+                        }),
+                        React.createElement('button', {
+                            onClick: saveWeekPlan,
+                            className: "px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2",
+                            key: "saveButton"
+                        }, [
+                            React.createElement(Save, { size: 16, key: "icon" }),
+                            "Sauvegarder"
+                        ]),
+                        React.createElement('button', {
+                            onClick: generateShoppingList,
+                            className: "px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2",
+                            key: "generateButton"
+                        }, [
+                            React.createElement(ShoppingCart, { size: 16, key: "icon" }),
+                            "Générer la liste"
+                        ]),
+                        React.createElement('button', {
+                            onClick: resetWeekPlan,
+                            className: "px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center gap-2",
+                            key: "resetButton"
+                        }, [
+                            React.createElement(RotateCcw, { size: 16, key: "icon" }),
+                            "Réinitialiser"
+                        ])
+                    ]),
+                    
+                    React.createElement('div', {
+                        className: "mb-6 bg-blue-50 p-4 rounded-lg",
+                        key: "weekInfo"
+                    }, [
+                        React.createElement('h3', {
+                            className: "font-semibold text-blue-800 mb-2",
+                            key: "title"
+                        }, `📅 Semaine du ${formatDateInFrench(weekDates.lundi)} au ${formatDateInFrench(weekDates.dimanche)}`),
+                        React.createElement('p', {
+                            className: "text-sm text-blue-600",
+                            key: "subtitle"
+                        }, "Planifiez vos repas pour la semaine en cours")
+                    ]),
+
+                    React.createElement('div', {
+                        className: "grid gap-4",
+                        key: "days"
+                    }, days.map(day => 
+                        React.createElement('div', {
+                            key: day,
+                            className: "border rounded-lg p-4"
+                        }, [
+                            React.createElement('h3', {
+                                className: "font-bold text-lg mb-1 capitalize flex items-center justify-between",
+                                key: "dayTitle"
+                            }, [
+                                day,
+                                React.createElement('span', {
+                                    className: "text-sm font-normal text-gray-500",
+                                    key: "date"
+                                }, formatDateInFrench(weekDates[day]))
+                            ]),
+                            React.createElement('div', {
+                                className: "grid md:grid-cols-2 lg:grid-cols-4 gap-4 mt-3",
+                                key: "meals"
+                            }, mealTypes.map(mealType =>
+                                React.createElement('div', {
+                                    key: mealType,
+                                    className: "border rounded p-3"
+                                }, [
+                                    React.createElement('h4', {
+                                        className: "font-medium mb-2",
+                                        key: "mealTitle"
+                                    }, getMealTypeLabel(mealType)),
+                                    currentWeekPlan.meals[day][mealType] ? 
+                                        React.createElement('div', {
+                                            className: "bg-green-50 p-2 rounded",
+                                            key: "mealContent"
+                                        }, [
+                                            React.createElement('div', {
+                                                className: "font-medium",
+                                                key: "title"
+                                            }, currentWeekPlan.meals[day][mealType].title),
+                                            React.createElement('button', {
+                                                onClick: () => assignMealToDay(day, mealType, null),
+                                                className: "text-red-500 text-sm mt-1 hover:text-red-700",
+                                                key: "deleteButton"
+                                            }, "Supprimer")
+                                        ]) :
+                                        React.createElement('select', {
+                                            onChange: (e) => {
+                                                const recipe = recipes.find(r => r.id === parseInt(e.target.value));
+                                                if (recipe) assignMealToDay(day, mealType, recipe);
+                                            },
+                                            className: "w-full p-2 border rounded",
+                                            key: "select"
+                                        }, [
+                                            React.createElement('option', {
+                                                value: "",
+                                                key: "default"
+                                            }, "Choisir une recette..."),
+                                            ...recipes.map(recipe =>
+                                                React.createElement('option', {
+                                                    key: recipe.id,
+                                                    value: recipe.id
+                                                }, recipe.title)
+                                            )
+                                        ])
+                                ])
+                            ))
+                        ])
+                    ))
+                ]),
+
+                // Autres onglets...
+                activeTab === 'recipes' && React.createElement('div', { key: "recipes-content" }, [
+                    React.createElement('div', {
+                        className: "mb-6 flex justify-between items-center",
+                        key: "header"
+                    }, [
+                        React.createElement('h2', {
+                            className: "text-2xl font-bold",
+                            key: "title"
+                        }, "Mes Recettes"),
+                        React.createElement('button', {
+                            onClick: () => setShowRecipeForm(true),
+                            className: "px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2",
+                            key: "addButton"
+                        }, [
+                            React.createElement(Plus, { size: 16, key: "icon" }),
+                            "Nouvelle recette"
+                        ])
+                    ]),
+
+                    React.createElement('div', {
+                        className: "grid md:grid-cols-2 lg:grid-cols-3 gap-4",
+                        key: "recipesList"
+                    }, recipes.map(recipe =>
+                        React.createElement('div', {
+                            key: recipe.id,
+                            className: "border rounded-lg p-4 hover:shadow-md"
+                        }, [
+                            React.createElement('h3', {
+                                className: "font-bold mb-2",
+                                key: "title"
+                            }, recipe.title),
+                            React.createElement('p', {
+                                className: "text-gray-600 text-sm mb-3",
+                                key: "description"
+                            }, recipe.description),
+                            React.createElement('div', {
+                                className: "mb-3",
+                                key: "ingredients"
+                            }, [
+                                React.createElement('h4', {
+                                    className: "font-medium text-sm mb-1",
+                                    key: "title"
+                                }, "Ingrédients:"),
+                                React.createElement('ul', {
+                                    className: "text-sm text-gray-600",
+                                    key: "list"
+                                }, [
+                                    ...recipe.ingredients?.slice(0, 3).map((ing, idx) =>
+                                        React.createElement('li', { key: idx }, `${ing.quantity} ${ing.unit} ${ing.name}`)
+                                    ),
+                                    recipe.ingredients?.length > 3 && 
+                                        React.createElement('li', {
+                                            className: "italic",
+                                            key: "more"
+                                        }, `... et ${recipe.ingredients.length - 3} autres`)
+                                ])
+                            ]),
+                            React.createElement('div', {
+                                className: "flex gap-2",
+                                key: "actions"
+                            }, [
+                                React.createElement('button', {
+                                    onClick: () => setEditingRecipe(recipe),
+                                    className: "text-blue-600 hover:text-blue-800",
+                                    key: "edit"
+                                }, React.createElement(Edit3, { size: 16 })),
+                                React.createElement('button', {
+                                    onClick: (e) => {
+                                        e.stopPropagation();
+                                        deleteRecipe(recipe.id);
+                                    },
+                                    className: "text-red-600 hover:text-red-800",
+                                    key: "delete"
+                                }, React.createElement(Trash2, { size: 16 }))
+                            ])
+                        ])
+                    )),
+
+                    recipes.length === 0 && React.createElement('div', {
+                        className: "text-center py-12 text-gray-500",
+                        key: "empty"
+                    }, [
+                        React.createElement(ChefHat, {
+                            size: 48,
+                            className: "mx-auto mb-4 opacity-50",
+                            key: "icon"
+                        }),
+                        React.createElement('p', { key: "text1" }, "Aucune recette pour le moment."),
+                        React.createElement('p', { key: "text2" }, "Commencez par créer votre première recette !")
+                    ])
+                ]),
+
+                // Formulaires
+                showRecipeForm && React.createElement(RecipeForm, {
+                    key: "newRecipeForm",
+                    onSave: (recipe) => {
+                        addRecipe(recipe);
+                        setShowRecipeForm(false);
+                    },
+                    onCancel: () => setShowRecipeForm(false)
+                }),
+
+                editingRecipe && React.createElement(RecipeForm, {
+                    key: "editRecipeForm",
+                    recipe: editingRecipe,
+                    onSave: (recipe) => {
+                        updateRecipe({ ...recipe, id: editingRecipe.id });
+                        setEditingRecipe(null);
+                    },
+                    onCancel: () => setEditingRecipe(null)
+                })
+            ]);
+        };
+
+        ReactDOM.render(React.createElement(MealPlannerApp), document.getElementById('root'));
+    </script>
+</body>
+</html>
