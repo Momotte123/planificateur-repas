@@ -7,18 +7,79 @@
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .lucide {
+            width: 16px;
+            height: 16px;
+            display: inline-block;
+        }
+    </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
         const { useState, useEffect } = React;
-        const { 
-            Plus, Edit3, Trash2, Calendar, ShoppingCart, 
-            Archive, ChefHat, Save, RotateCcw 
-        } = lucide;
+        const { createRoot } = ReactDOM;
+
+        // Composants d'icônes simplifiés
+        const PlusIcon = () => (
+            <svg className="lucide" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v14m-7-7h14" />
+            </svg>
+        );
+
+        const EditIcon = () => (
+            <svg className="lucide" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+            </svg>
+        );
+
+        const TrashIcon = () => (
+            <svg className="lucide" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14zM10 11v6M14 11v6" />
+            </svg>
+        );
+
+        const CalendarIcon = () => (
+            <svg className="lucide" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+        );
+
+        const ShoppingCartIcon = () => (
+            <svg className="lucide" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m1.6 8L6 21H8m11 0a2 2 0 104 0 2 2 0 00-4 0zM9 21a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+        );
+
+        const ArchiveIcon = () => (
+            <svg className="lucide" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 8v13H3V8M1 3h22v5H1zM10 12h4" />
+            </svg>
+        );
+
+        const ChefHatIcon = () => (
+            <svg className="lucide" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 21v-2a1 1 0 00-1-1v-1a2 2 0 00-2-2H10a2 2 0 00-2 2v1a1 1 0 00-1 1v2h10zM7 8a5 5 0 1110 0" />
+            </svg>
+        );
+
+        const SaveIcon = () => (
+            <svg className="lucide" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 21v-8H7v8M7 3v5h8" />
+            </svg>
+        );
+
+        const RotateIcon = () => (
+            <svg className="lucide" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M1 4v6h6M23 20v-6h-6" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15" />
+            </svg>
+        );
 
         const MealPlannerApp = () => {
             const [activeTab, setActiveTab] = useState('planner');
@@ -205,6 +266,16 @@
                 setShoppingList(shoppingList.filter(item => item.id !== id));
             };
 
+            const getMealTypeLabel = (mealType) => {
+                switch(mealType) {
+                    case 'petitDejeuner': return 'Petit-déjeuner';
+                    case 'dejeuner': return 'Déjeuner';
+                    case 'gouter': return 'Goûter';
+                    case 'diner': return 'Dîner';
+                    default: return mealType;
+                }
+            };
+
             // Composant formulaire de recette
             const RecipeForm = ({ recipe, onSave, onCancel }) => {
                 const [formData, setFormData] = useState(recipe || {
@@ -242,412 +313,441 @@
                     onSave(formData);
                 };
 
-                return React.createElement('div', {
-                    className: "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
-                }, React.createElement('div', {
-                    className: "bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
-                }, [
-                    React.createElement('h2', {
-                        className: "text-xl font-bold mb-4",
-                        key: "title"
-                    }, recipe ? 'Modifier la recette' : 'Nouvelle recette'),
-                    React.createElement('div', { key: "content" }, [
-                        React.createElement('div', {
-                            className: "mb-4",
-                            key: "titleInput"
-                        }, [
-                            React.createElement('label', {
-                                className: "block text-sm font-medium mb-2",
-                                key: "label"
-                            }, "Titre"),
-                            React.createElement('input', {
-                                type: "text",
-                                value: formData.title,
-                                onChange: (e) => setFormData({...formData, title: e.target.value}),
-                                className: "w-full p-2 border rounded-lg",
-                                placeholder: "Nom de la recette...",
-                                key: "input"
-                            })
-                        ]),
-                        React.createElement('div', {
-                            className: "mb-4",
-                            key: "descInput"
-                        }, [
-                            React.createElement('label', {
-                                className: "block text-sm font-medium mb-2",
-                                key: "label"
-                            }, "Description"),
-                            React.createElement('textarea', {
-                                value: formData.description,
-                                onChange: (e) => setFormData({...formData, description: e.target.value}),
-                                className: "w-full p-2 border rounded-lg h-24 resize-none",
-                                placeholder: "Description de la recette...",
-                                key: "textarea"
-                            })
-                        ]),
-                        React.createElement('div', {
-                            className: "mb-6",
-                            key: "ingredients"
-                        }, [
-                            React.createElement('label', {
-                                className: "block text-sm font-medium mb-2",
-                                key: "label"
-                            }, "Ingrédients"),
-                            ...formData.ingredients.map((ingredient, index) => 
-                                React.createElement('div', {
-                                    key: index,
-                                    className: "flex gap-2 mb-2 items-center"
-                                }, [
-                                    React.createElement('input', {
-                                        type: "text",
-                                        value: ingredient.name,
-                                        onChange: (e) => updateIngredient(index, 'name', e.target.value),
-                                        className: "flex-1 p-2 border rounded",
-                                        placeholder: "Nom de l'ingrédient",
-                                        key: "name"
-                                    }),
-                                    React.createElement('input', {
-                                        type: "number",
-                                        step: "0.1",
-                                        value: ingredient.quantity,
-                                        onChange: (e) => updateIngredient(index, 'quantity', e.target.value),
-                                        className: "w-20 p-2 border rounded",
-                                        placeholder: "Qté",
-                                        key: "quantity"
-                                    }),
-                                    React.createElement('select', {
-                                        value: ingredient.unit,
-                                        onChange: (e) => updateIngredient(index, 'unit', e.target.value),
-                                        className: "p-2 border rounded",
-                                        key: "unit"
-                                    }, units.map(unit => 
-                                        React.createElement('option', {
-                                            key: unit,
-                                            value: unit
-                                        }, unit)
-                                    )),
-                                    React.createElement('button', {
-                                        type: "button",
-                                        onClick: () => removeIngredient(index),
-                                        className: "text-red-500 hover:text-red-700",
-                                        disabled: formData.ingredients.length === 1,
-                                        key: "delete"
-                                    }, React.createElement(Trash2, { size: 16 }))
-                                ])
-                            ),
-                            React.createElement('button', {
-                                type: "button",
-                                onClick: addIngredient,
-                                className: "text-green-600 hover:text-green-800 text-sm",
-                                key: "addButton"
-                            }, "+ Ajouter un ingrédient")
-                        ]),
-                        React.createElement('div', {
-                            className: "flex gap-2 justify-end",
-                            key: "buttons"
-                        }, [
-                            React.createElement('button', {
-                                type: "button",
-                                onClick: onCancel,
-                                className: "px-4 py-2 text-gray-600 hover:bg-gray-100 rounded",
-                                key: "cancel"
-                            }, "Annuler"),
-                            React.createElement('button', {
-                                type: "button",
-                                onClick: handleSave,
-                                className: "px-4 py-2 bg-green-600 text-white hover:bg-green-700 rounded flex items-center gap-2",
-                                key: "save"
-                            }, [
-                                React.createElement(Save, { size: 16, key: "icon" }),
-                                "Sauvegarder"
-                            ])
-                        ])
-                    ])
-                ]));
+                return (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                        <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                            <h2 className="text-xl font-bold mb-4">
+                                {recipe ? 'Modifier la recette' : 'Nouvelle recette'}
+                            </h2>
+                            
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium mb-2">Titre</label>
+                                <input
+                                    type="text"
+                                    value={formData.title}
+                                    onChange={(e) => setFormData({...formData, title: e.target.value})}
+                                    className="w-full p-2 border rounded-lg"
+                                    placeholder="Nom de la recette..."
+                                />
+                            </div>
+
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium mb-2">Description</label>
+                                <textarea
+                                    value={formData.description}
+                                    onChange={(e) => setFormData({...formData, description: e.target.value})}
+                                    className="w-full p-2 border rounded-lg h-24 resize-none"
+                                    placeholder="Description de la recette..."
+                                />
+                            </div>
+
+                            <div className="mb-6">
+                                <label className="block text-sm font-medium mb-2">Ingrédients</label>
+                                {formData.ingredients.map((ingredient, index) => (
+                                    <div key={index} className="flex gap-2 mb-2 items-center">
+                                        <input
+                                            type="text"
+                                            value={ingredient.name}
+                                            onChange={(e) => updateIngredient(index, 'name', e.target.value)}
+                                            className="flex-1 p-2 border rounded"
+                                            placeholder="Nom de l'ingrédient"
+                                        />
+                                        <input
+                                            type="number"
+                                            step="0.1"
+                                            value={ingredient.quantity}
+                                            onChange={(e) => updateIngredient(index, 'quantity', e.target.value)}
+                                            className="w-20 p-2 border rounded"
+                                            placeholder="Qté"
+                                        />
+                                        <select
+                                            value={ingredient.unit}
+                                            onChange={(e) => updateIngredient(index, 'unit', e.target.value)}
+                                            className="p-2 border rounded"
+                                        >
+                                            {units.map(unit => (
+                                                <option key={unit} value={unit}>{unit}</option>
+                                            ))}
+                                        </select>
+                                        <button
+                                            type="button"
+                                            onClick={() => removeIngredient(index)}
+                                            className="text-red-500 hover:text-red-700"
+                                            disabled={formData.ingredients.length === 1}
+                                        >
+                                            <TrashIcon />
+                                        </button>
+                                    </div>
+                                ))}
+                                <button
+                                    type="button"
+                                    onClick={addIngredient}
+                                    className="text-green-600 hover:text-green-800 text-sm"
+                                >
+                                    + Ajouter un ingrédient
+                                </button>
+                            </div>
+
+                            <div className="flex gap-2 justify-end">
+                                <button
+                                    type="button"
+                                    onClick={onCancel}
+                                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded"
+                                >
+                                    Annuler
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleSave}
+                                    className="px-4 py-2 bg-green-600 text-white hover:bg-green-700 rounded flex items-center gap-2"
+                                >
+                                    <SaveIcon />
+                                    Sauvegarder
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                );
             };
 
-            const getMealTypeLabel = (mealType) => {
-                switch(mealType) {
-                    case 'petitDejeuner': return 'Petit-déjeuner';
-                    case 'dejeuner': return 'Déjeuner';
-                    case 'gouter': return 'Goûter';
-                    case 'diner': return 'Dîner';
-                    default: return mealType;
-                }
-            };
-
-            return React.createElement('div', {
-                className: "max-w-6xl mx-auto p-4"
-            }, [
-                React.createElement('h1', {
-                    className: "text-3xl font-bold text-center mb-8 text-green-700",
-                    key: "title"
-                }, "🥗 Planificateur de Repas"),
-                
-                // Navigation
-                React.createElement('div', {
-                    className: "flex flex-wrap gap-2 mb-6 border-b",
-                    key: "navigation"
-                }, [
-                    { key: 'planner', label: 'Semainier', icon: Calendar },
-                    { key: 'recipes', label: 'Recettes', icon: ChefHat },
-                    { key: 'archive', label: 'Historique', icon: Archive },
-                    { key: 'shopping', label: 'Liste de Courses', icon: ShoppingCart }
-                ].map(tab => 
-                    React.createElement('button', {
-                        key: tab.key,
-                        onClick: () => setActiveTab(tab.key),
-                        className: `px-4 py-2 rounded-t-lg flex items-center gap-2 ${
-                            activeTab === tab.key 
-                                ? 'bg-green-600 text-white' 
-                                : 'bg-gray-100 hover:bg-gray-200'
-                        }`
-                    }, [
-                        React.createElement(tab.icon, { size: 16, key: "icon" }),
-                        tab.label
-                    ])
-                )),
-
-                // Contenu des onglets
-                activeTab === 'planner' && React.createElement('div', { key: "planner-content" }, [
-                    React.createElement('div', {
-                        className: "mb-6 flex flex-wrap gap-4 items-center",
-                        key: "controls"
-                    }, [
-                        React.createElement('input', {
-                            type: "text",
-                            value: currentWeekPlan.name,
-                            onChange: (e) => setCurrentWeekPlan({...currentWeekPlan, name: e.target.value}),
-                            placeholder: "Nom du semainier...",
-                            className: "flex-1 min-w-64 p-2 border rounded-lg",
-                            key: "nameInput"
-                        }),
-                        React.createElement('button', {
-                            onClick: saveWeekPlan,
-                            className: "px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2",
-                            key: "saveButton"
-                        }, [
-                            React.createElement(Save, { size: 16, key: "icon" }),
-                            "Sauvegarder"
-                        ]),
-                        React.createElement('button', {
-                            onClick: generateShoppingList,
-                            className: "px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2",
-                            key: "generateButton"
-                        }, [
-                            React.createElement(ShoppingCart, { size: 16, key: "icon" }),
-                            "Générer la liste"
-                        ]),
-                        React.createElement('button', {
-                            onClick: resetWeekPlan,
-                            className: "px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center gap-2",
-                            key: "resetButton"
-                        }, [
-                            React.createElement(RotateCcw, { size: 16, key: "icon" }),
-                            "Réinitialiser"
-                        ])
-                    ]),
+            return (
+                <div className="max-w-6xl mx-auto p-4">
+                    <h1 className="text-3xl font-bold text-center mb-8 text-green-700">
+                        🥗 Planificateur de Repas
+                    </h1>
                     
-                    React.createElement('div', {
-                        className: "mb-6 bg-blue-50 p-4 rounded-lg",
-                        key: "weekInfo"
-                    }, [
-                        React.createElement('h3', {
-                            className: "font-semibold text-blue-800 mb-2",
-                            key: "title"
-                        }, `📅 Semaine du ${formatDateInFrench(weekDates.lundi)} au ${formatDateInFrench(weekDates.dimanche)}`),
-                        React.createElement('p', {
-                            className: "text-sm text-blue-600",
-                            key: "subtitle"
-                        }, "Planifiez vos repas pour la semaine en cours")
-                    ]),
+                    {/* Navigation */}
+                    <div className="flex flex-wrap gap-2 mb-6 border-b">
+                        <button
+                            onClick={() => setActiveTab('planner')}
+                            className={`px-4 py-2 rounded-t-lg flex items-center gap-2 ${
+                                activeTab === 'planner' 
+                                    ? 'bg-green-600 text-white' 
+                                    : 'bg-gray-100 hover:bg-gray-200'
+                            }`}
+                        >
+                            <CalendarIcon />
+                            Semainier
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('recipes')}
+                            className={`px-4 py-2 rounded-t-lg flex items-center gap-2 ${
+                                activeTab === 'recipes' 
+                                    ? 'bg-green-600 text-white' 
+                                    : 'bg-gray-100 hover:bg-gray-200'
+                            }`}
+                        >
+                            <ChefHatIcon />
+                            Recettes
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('archive')}
+                            className={`px-4 py-2 rounded-t-lg flex items-center gap-2 ${
+                                activeTab === 'archive' 
+                                    ? 'bg-green-600 text-white' 
+                                    : 'bg-gray-100 hover:bg-gray-200'
+                            }`}
+                        >
+                            <ArchiveIcon />
+                            Historique
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('shopping')}
+                            className={`px-4 py-2 rounded-t-lg flex items-center gap-2 ${
+                                activeTab === 'shopping' 
+                                    ? 'bg-green-600 text-white' 
+                                    : 'bg-gray-100 hover:bg-gray-200'
+                            }`}
+                        >
+                            <ShoppingCartIcon />
+                            Liste de Courses
+                        </button>
+                    </div>
 
-                    React.createElement('div', {
-                        className: "grid gap-4",
-                        key: "days"
-                    }, days.map(day => 
-                        React.createElement('div', {
-                            key: day,
-                            className: "border rounded-lg p-4"
-                        }, [
-                            React.createElement('h3', {
-                                className: "font-bold text-lg mb-1 capitalize flex items-center justify-between",
-                                key: "dayTitle"
-                            }, [
-                                day,
-                                React.createElement('span', {
-                                    className: "text-sm font-normal text-gray-500",
-                                    key: "date"
-                                }, formatDateInFrench(weekDates[day]))
-                            ]),
-                            React.createElement('div', {
-                                className: "grid md:grid-cols-2 lg:grid-cols-4 gap-4 mt-3",
-                                key: "meals"
-                            }, mealTypes.map(mealType =>
-                                React.createElement('div', {
-                                    key: mealType,
-                                    className: "border rounded p-3"
-                                }, [
-                                    React.createElement('h4', {
-                                        className: "font-medium mb-2",
-                                        key: "mealTitle"
-                                    }, getMealTypeLabel(mealType)),
-                                    currentWeekPlan.meals[day][mealType] ? 
-                                        React.createElement('div', {
-                                            className: "bg-green-50 p-2 rounded",
-                                            key: "mealContent"
-                                        }, [
-                                            React.createElement('div', {
-                                                className: "font-medium",
-                                                key: "title"
-                                            }, currentWeekPlan.meals[day][mealType].title),
-                                            React.createElement('button', {
-                                                onClick: () => assignMealToDay(day, mealType, null),
-                                                className: "text-red-500 text-sm mt-1 hover:text-red-700",
-                                                key: "deleteButton"
-                                            }, "Supprimer")
-                                        ]) :
-                                        React.createElement('select', {
-                                            onChange: (e) => {
-                                                const recipe = recipes.find(r => r.id === parseInt(e.target.value));
-                                                if (recipe) assignMealToDay(day, mealType, recipe);
-                                            },
-                                            className: "w-full p-2 border rounded",
-                                            key: "select"
-                                        }, [
-                                            React.createElement('option', {
-                                                value: "",
-                                                key: "default"
-                                            }, "Choisir une recette..."),
-                                            ...recipes.map(recipe =>
-                                                React.createElement('option', {
-                                                    key: recipe.id,
-                                                    value: recipe.id
-                                                }, recipe.title)
-                                            )
-                                        ])
-                                ])
-                            ))
-                        ])
-                    ))
-                ]),
+                    {/* Onglet Semainier */}
+                    {activeTab === 'planner' && (
+                        <div>
+                            <div className="mb-6 flex flex-wrap gap-4 items-center">
+                                <input
+                                    type="text"
+                                    value={currentWeekPlan.name}
+                                    onChange={(e) => setCurrentWeekPlan({...currentWeekPlan, name: e.target.value})}
+                                    placeholder="Nom du semainier..."
+                                    className="flex-1 min-w-64 p-2 border rounded-lg"
+                                />
+                                <button
+                                    onClick={saveWeekPlan}
+                                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2"
+                                >
+                                    <SaveIcon />
+                                    Sauvegarder
+                                </button>
+                                <button
+                                    onClick={generateShoppingList}
+                                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
+                                >
+                                    <ShoppingCartIcon />
+                                    Générer la liste
+                                </button>
+                                <button
+                                    onClick={resetWeekPlan}
+                                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center gap-2"
+                                >
+                                    <RotateIcon />
+                                    Réinitialiser
+                                </button>
+                            </div>
 
-                // Autres onglets...
-                activeTab === 'recipes' && React.createElement('div', { key: "recipes-content" }, [
-                    React.createElement('div', {
-                        className: "mb-6 flex justify-between items-center",
-                        key: "header"
-                    }, [
-                        React.createElement('h2', {
-                            className: "text-2xl font-bold",
-                            key: "title"
-                        }, "Mes Recettes"),
-                        React.createElement('button', {
-                            onClick: () => setShowRecipeForm(true),
-                            className: "px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2",
-                            key: "addButton"
-                        }, [
-                            React.createElement(Plus, { size: 16, key: "icon" }),
-                            "Nouvelle recette"
-                        ])
-                    ]),
+                            <div className="mb-6 bg-blue-50 p-4 rounded-lg">
+                                <h3 className="font-semibold text-blue-800 mb-2">
+                                    📅 Semaine du {formatDateInFrench(weekDates.lundi)} au {formatDateInFrench(weekDates.dimanche)}
+                                </h3>
+                                <p className="text-sm text-blue-600">
+                                    Planifiez vos repas pour la semaine en cours
+                                </p>
+                            </div>
 
-                    React.createElement('div', {
-                        className: "grid md:grid-cols-2 lg:grid-cols-3 gap-4",
-                        key: "recipesList"
-                    }, recipes.map(recipe =>
-                        React.createElement('div', {
-                            key: recipe.id,
-                            className: "border rounded-lg p-4 hover:shadow-md"
-                        }, [
-                            React.createElement('h3', {
-                                className: "font-bold mb-2",
-                                key: "title"
-                            }, recipe.title),
-                            React.createElement('p', {
-                                className: "text-gray-600 text-sm mb-3",
-                                key: "description"
-                            }, recipe.description),
-                            React.createElement('div', {
-                                className: "mb-3",
-                                key: "ingredients"
-                            }, [
-                                React.createElement('h4', {
-                                    className: "font-medium text-sm mb-1",
-                                    key: "title"
-                                }, "Ingrédients:"),
-                                React.createElement('ul', {
-                                    className: "text-sm text-gray-600",
-                                    key: "list"
-                                }, [
-                                    ...recipe.ingredients?.slice(0, 3).map((ing, idx) =>
-                                        React.createElement('li', { key: idx }, `${ing.quantity} ${ing.unit} ${ing.name}`)
-                                    ),
-                                    recipe.ingredients?.length > 3 && 
-                                        React.createElement('li', {
-                                            className: "italic",
-                                            key: "more"
-                                        }, `... et ${recipe.ingredients.length - 3} autres`)
-                                ])
-                            ]),
-                            React.createElement('div', {
-                                className: "flex gap-2",
-                                key: "actions"
-                            }, [
-                                React.createElement('button', {
-                                    onClick: () => setEditingRecipe(recipe),
-                                    className: "text-blue-600 hover:text-blue-800",
-                                    key: "edit"
-                                }, React.createElement(Edit3, { size: 16 })),
-                                React.createElement('button', {
-                                    onClick: (e) => {
-                                        e.stopPropagation();
-                                        deleteRecipe(recipe.id);
-                                    },
-                                    className: "text-red-600 hover:text-red-800",
-                                    key: "delete"
-                                }, React.createElement(Trash2, { size: 16 }))
-                            ])
-                        ])
-                    )),
+                            <div className="grid gap-4">
+                                {days.map(day => (
+                                    <div key={day} className="border rounded-lg p-4">
+                                        <h3 className="font-bold text-lg mb-1 capitalize flex items-center justify-between">
+                                            {day}
+                                            <span className="text-sm font-normal text-gray-500">
+                                                {formatDateInFrench(weekDates[day])}
+                                            </span>
+                                        </h3>
+                                        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mt-3">
+                                            {mealTypes.map(mealType => (
+                                                <div key={mealType} className="border rounded p-3">
+                                                    <h4 className="font-medium mb-2">
+                                                        {getMealTypeLabel(mealType)}
+                                                    </h4>
+                                                    {currentWeekPlan.meals[day][mealType] ? (
+                                                        <div className="bg-green-50 p-2 rounded">
+                                                            <div className="font-medium">{currentWeekPlan.meals[day][mealType].title}</div>
+                                                            <button
+                                                                onClick={() => assignMealToDay(day, mealType, null)}
+                                                                className="text-red-500 text-sm mt-1 hover:text-red-700"
+                                                            >
+                                                                Supprimer
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <select
+                                                            onChange={(e) => {
+                                                                const recipe = recipes.find(r => r.id === parseInt(e.target.value));
+                                                                if (recipe) assignMealToDay(day, mealType, recipe);
+                                                            }}
+                                                            className="w-full p-2 border rounded"
+                                                            value=""
+                                                        >
+                                                            <option value="">Choisir une recette...</option>
+                                                            {recipes.map(recipe => (
+                                                                <option key={recipe.id} value={recipe.id}>
+                                                                    {recipe.title}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
-                    recipes.length === 0 && React.createElement('div', {
-                        className: "text-center py-12 text-gray-500",
-                        key: "empty"
-                    }, [
-                        React.createElement(ChefHat, {
-                            size: 48,
-                            className: "mx-auto mb-4 opacity-50",
-                            key: "icon"
-                        }),
-                        React.createElement('p', { key: "text1" }, "Aucune recette pour le moment."),
-                        React.createElement('p', { key: "text2" }, "Commencez par créer votre première recette !")
-                    ])
-                ]),
+                    {/* Onglet Recettes */}
+                    {activeTab === 'recipes' && (
+                        <div>
+                            <div className="mb-6 flex justify-between items-center">
+                                <h2 className="text-2xl font-bold">Mes Recettes</h2>
+                                <button
+                                    onClick={() => setShowRecipeForm(true)}
+                                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2"
+                                >
+                                    <PlusIcon />
+                                    Nouvelle recette
+                                </button>
+                            </div>
 
-                // Formulaires
-                showRecipeForm && React.createElement(RecipeForm, {
-                    key: "newRecipeForm",
-                    onSave: (recipe) => {
-                        addRecipe(recipe);
-                        setShowRecipeForm(false);
-                    },
-                    onCancel: () => setShowRecipeForm(false)
-                }),
+                            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {recipes.map(recipe => (
+                                    <div key={recipe.id} className="border rounded-lg p-4 hover:shadow-md">
+                                        <h3 className="font-bold mb-2">{recipe.title}</h3>
+                                        <p className="text-gray-600 text-sm mb-3">{recipe.description}</p>
+                                        <div className="mb-3">
+                                            <h4 className="font-medium text-sm mb-1">Ingrédients:</h4>
+                                            <ul className="text-sm text-gray-600">
+                                                {recipe.ingredients?.slice(0, 3).map((ing, idx) => (
+                                                    <li key={idx}>
+                                                        {ing.quantity} {ing.unit} {ing.name}
+                                                    </li>
+                                                ))}
+                                                {recipe.ingredients?.length > 3 && (
+                                                    <li className="italic">... et {recipe.ingredients.length - 3} autres</li>
+                                                )}
+                                            </ul>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => setEditingRecipe(recipe)}
+                                                className="text-blue-600 hover:text-blue-800"
+                                            >
+                                                <EditIcon />
+                                            </button>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    deleteRecipe(recipe.id);
+                                                }}
+                                                className="text-red-600 hover:text-red-800"
+                                            >
+                                                <TrashIcon />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
 
-                editingRecipe && React.createElement(RecipeForm, {
-                    key: "editRecipeForm",
-                    recipe: editingRecipe,
-                    onSave: (recipe) => {
-                        updateRecipe({ ...recipe, id: editingRecipe.id });
-                        setEditingRecipe(null);
-                    },
-                    onCancel: () => setEditingRecipe(null)
-                })
-            ]);
+                            {recipes.length === 0 && (
+                                <div className="text-center py-12 text-gray-500">
+                                    <div className="mb-4 flex justify-center" style={{fontSize: '48px', opacity: 0.5}}>
+                                        <ChefHatIcon />
+                                    </div>
+                                    <p>Aucune recette pour le moment.</p>
+                                    <p>Commencez par créer votre première recette !</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Onglet Historique */}
+                    {activeTab === 'archive' && (
+                        <div>
+                            <h2 className="text-2xl font-bold mb-6">Historique des Semainiers</h2>
+                            
+                            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {weekPlans.map(plan => (
+                                    <div key={plan.id} className="border rounded-lg p-4 hover:shadow-md">
+                                        <h3 className="font-bold mb-2">{plan.name}</h3>
+                                        <p className="text-gray-600 text-sm mb-3">
+                                            Sauvegardé le {new Date(plan.savedAt).toLocaleDateString()}
+                                        </p>
+                                        <div className="text-sm mb-3">
+                                            <p>Repas planifiés: {
+                                                Object.values(plan.meals).reduce((count, dayMeals) => 
+                                                    count + Object.values(dayMeals).filter(meal => meal).length, 0
+                                                )
+                                            }</p>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => loadWeekPlan(plan)}
+                                                className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                                            >
+                                                Charger
+                                            </button>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    deleteWeekPlan(plan.id);
+                                                }}
+                                                className="text-red-600 hover:text-red-800"
+                                            >
+                                                <TrashIcon />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {weekPlans.length === 0 && (
+                                <div className="text-center py-12 text-gray-500">
+                                    <div className="mb-4 flex justify-center" style={{fontSize: '48px', opacity: 0.5}}>
+                                        <ArchiveIcon />
+                                    </div>
+                                    <p>Aucun semainier sauvegardé.</p>
+                                    <p>Vos semainiers apparaîtront ici une fois sauvegardés.</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Onglet Liste de Courses */}
+                    {activeTab === 'shopping' && (
+                        <div>
+                            <h2 className="text-2xl font-bold mb-6">Liste de Courses</h2>
+                            
+                            {shoppingList.length === 0 ? (
+                                <div className="text-center py-12 text-gray-500">
+                                    <div className="mb-4 flex justify-center" style={{fontSize: '48px', opacity: 0.5}}>
+                                        <ShoppingCartIcon />
+                                    </div>
+                                    <p>Aucune liste de courses générée.</p>
+                                    <p>Créez un semainier et cliquez sur "Générer la liste" !</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-2">
+                                    {shoppingList.map(item => (
+                                        <div
+                                            key={item.id}
+                                            className={`flex items-center gap-3 p-3 border rounded-lg ${
+                                                item.bought ? 'bg-green-50 opacity-75' : 'bg-white'
+                                            }`}
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                checked={item.bought}
+                                                onChange={() => toggleShoppingItem(item.id)}
+                                                className="w-4 h-4"
+                                            />
+                                            <span className={`flex-1 ${item.bought ? 'line-through text-gray-500' : ''}`}>
+                                                {item.quantity} {item.unit} {item.name}
+                                            </span>
+                                            <button
+                                                onClick={() => deleteShoppingItem(item.id)}
+                                                className="text-red-500 hover:text-red-700"
+                                            >
+                                                <TrashIcon />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Formulaires de recette */}
+                    {showRecipeForm && (
+                        <RecipeForm
+                            onSave={(recipe) => {
+                                addRecipe(recipe);
+                                setShowRecipeForm(false);
+                            }}
+                            onCancel={() => setShowRecipeForm(false)}
+                        />
+                    )}
+
+                    {editingRecipe && (
+                        <RecipeForm
+                            recipe={editingRecipe}
+                            onSave={(recipe) => {
+                                updateRecipe({ ...recipe, id: editingRecipe.id });
+                                setEditingRecipe(null);
+                            }}
+                            onCancel={() => setEditingRecipe(null)}
+                        />
+                    )}
+                </div>
+            );
         };
 
-        ReactDOM.render(React.createElement(MealPlannerApp), document.getElementById('root'));
+        // Utilisation de React 18 createRoot
+        const container = document.getElementById('root');
+        const root = createRoot(container);
+        root.render(<MealPlannerApp />);
     </script>
 </body>
 </html>
